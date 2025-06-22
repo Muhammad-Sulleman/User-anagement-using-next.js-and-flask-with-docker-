@@ -2,24 +2,31 @@
 from flask import Flask, request, jsonify, make_response
 from flask_cors import CORS
 from flask_sqlalchemy import SQLAlchemy
-from os import environ
+
 app=Flask(__name__)
 CORS(app)
-app.config['SQLALCHEMY_DATABASE_URI'] = environ.get('DATABASE_URL')
+import os
+
+
+app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URI')
 db = SQLAlchemy(app)
 class User(db.Model):
     __tablename__ = 'users'
-    id=db.Column(db.Integer,primary_key=True)
-    username=db.Column(db.String(80),unique=True,nullable=False)
-    email=db.Column(db.String(80),unique=True,nullable=False)
-    password=db.Column(db.String(120),nullable=False)
-def json(self):
-    return{
-        'id': self.id,
-        'username': self.username,
-        'email': self.email
-    }
-db.create_all()
+    id = db.Column(db.Integer, primary_key=True)
+    username = db.Column(db.String(80), unique=True, nullable=False)
+    email = db.Column(db.String(80), unique=True, nullable=False)
+    password = db.Column(db.String(120), nullable=False)
+
+    def json(self):
+        return {
+            'id': self.id,
+            'username': self.username,
+            'email': self.email
+        }
+
+with app.app_context():
+    db.create_all()
+
 @app.route('/api/users',methods=['POST'])
 def create_user():
     data=request.get_json()
@@ -40,7 +47,10 @@ def create_user():
 def get_users():
    try:
        users=User.query.all()
-       return jsonify([user.json()for user in users]), 200
+       return jsonify([{'id': user.id,
+                        'username': user.username,
+                        'email': user.email
+                        } for user in users]), 200
    except Exception as e:
        return make_response(jsonify({'error getting users': str(e)}), 500)
 @app.route('/api/users/<int:id>',methods=['GET'])

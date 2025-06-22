@@ -1,12 +1,31 @@
 
 services:
+  
+  #flask app service
+  flaskapp:
+   container_name: flaskapp
+   image: flaskapp:1.0.0
+
+
+   build:
+    context: ./backend
+    dockerfile: flask.dockerfile
+
+   ports:
+    - 4000:4000
+  
+   environment:
+    - DATABASE_URI=postgresql://postgres:postgres@db:5432/postgres
+   depends_on:
+    - db
+#db services
   db:
     container_name: db
     image: postgres:latest
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: mydb
+      POSTGRES_DB: postgres
     ports:
       - "5432:5432"
     volumes:
